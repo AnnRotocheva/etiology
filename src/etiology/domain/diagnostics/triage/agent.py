@@ -52,8 +52,19 @@ def _build_prompt(raw_message: str, articles: list[KbArticle]) -> tuple[str, str
     return system, user
 
 
+def _strip_code_fence(text: str) -> str:
+    """Модели иногда оборачивают JSON в markdown code fence несмотря на
+    прямую инструкцию не делать этого — снимаем fence перед парсингом,
+    а не полагаемся на retry для того, что легко нормализовать сразу."""
+    text = text.strip()
+    if text.startswith("```"):
+        _, _, rest = text.partition("\n")
+        text = rest.removesuffix("```").strip()
+    return text
+
+
 def _parse_classification(text: str, known_article_ids: set[str]) -> _Classification:
-    data = json.loads(text)
+    data = json.loads(_strip_code_fence(text))
     classification = _Classification.model_validate(data)
     if classification.kb_article_id is not None and classification.kb_article_id not in known_article_ids:
         raise ValueError(f"kb_article_id {classification.kb_article_id!r} не входит в список найденных статей")

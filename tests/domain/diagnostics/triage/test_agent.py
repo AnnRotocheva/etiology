@@ -88,6 +88,24 @@ async def test_triage_publishes_incident_triaged_event():
     assert call["payload"]["raw_message"] == "У меня не работает биллинг"
 
 
+async def test_triage_strips_markdown_code_fence_before_parsing():
+    fenced = f"```json\n{_valid_json()}\n```"
+    provider = FakeProvider("fake", [fenced])
+    gateway = ModelGateway([provider])
+    publisher = FakePublisher()
+
+    result = await triage(
+        "tenant-1",
+        "У меня не работает биллинг",
+        gateway=gateway,
+        publisher=publisher,
+        kb_search=_no_articles,
+    )
+
+    assert provider.calls == 1
+    assert result.severity == "high"
+
+
 async def test_triage_grounds_kb_closable_in_found_article():
     article = KbArticle(id=str(uuid.uuid4()), kind="known_issue", title="t", body="b", topic_tag="billing")
 
