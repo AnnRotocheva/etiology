@@ -6,9 +6,12 @@
       "Bash(./.venv/Scripts/python.exe -m py_compile *)",
       "Bash(.venv/Scripts/python.exe *)",
       "Bash(./.venv/Scripts/python.exe *)",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe *)",
+      "Bash(PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe *)",
       "Bash(git *)",
       "Bash(\"/c/Program Files/PostgreSQL/17/bin/pg_ctl.exe\" *)",
       "Bash(mkdir -p *)",
+      "Bash(cat *)",
       "mcp__ccd_session__mark_chapter"
     ]
   }
