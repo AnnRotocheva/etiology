@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./.venv/Scripts/python.exe -m pytest *)",
+      "Bash(./.venv/Scripts/python.exe -m compileall *)",
+      "Bash(./.venv/Scripts/python.exe -m py_compile *)",
+      "Bash(.venv/Scripts/python.exe *)",
+      "Bash(./.venv/Scripts/python.exe *)",
+      "Bash(git *)",
+      "Bash(\"/c/Program Files/PostgreSQL/17/bin/pg_ctl.exe\" *)",
+      "Bash(mkdir -p *)",
+      "mcp__ccd_session__mark_chapter"
+    ]
+  }
+}
