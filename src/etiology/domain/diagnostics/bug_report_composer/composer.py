@@ -114,7 +114,9 @@ async def compose(
                     content=f"Ответ не прошёл валидацию: {last_error}. Верни только исправленный JSON-объект.",
                 )
             )
-        response = await gateway.complete(ModelRequest(tier=ModelTier.STRONG, messages=messages, system=system))
+        response = await gateway.complete(
+            ModelRequest(tier=ModelTier.STRONG, messages=messages, system=system, max_tokens=2048)
+        )
         try:
             report = _parse_report(response.content)
             break
