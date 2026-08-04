@@ -112,7 +112,7 @@ async def coordinate(
                 )
             )
         response = await gateway.complete(
-            ModelRequest(tier=ModelTier.STANDARD, messages=messages, system=system, max_tokens=1536)
+            ModelRequest(tier=ModelTier.STANDARD, messages=messages, system=system, max_tokens=3072)
         )
         try:
             correlation = _parse_correlation(response.content, known_ids)

@@ -126,7 +126,7 @@ async def curate(
                 )
             )
         response = await gateway.complete(
-            ModelRequest(tier=ModelTier.STANDARD, messages=messages, system=system, max_tokens=1536)
+            ModelRequest(tier=ModelTier.STANDARD, messages=messages, system=system, max_tokens=3072)
         )
         try:
             decision = _parse_decision(response.content)

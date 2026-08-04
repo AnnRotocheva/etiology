@@ -115,7 +115,7 @@ async def compose(
                 )
             )
         response = await gateway.complete(
-            ModelRequest(tier=ModelTier.STRONG, messages=messages, system=system, max_tokens=2048)
+            ModelRequest(tier=ModelTier.STRONG, messages=messages, system=system, max_tokens=4096)
         )
         try:
             report = _parse_report(response.content)
