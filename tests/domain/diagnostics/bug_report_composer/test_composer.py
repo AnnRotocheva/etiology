@@ -55,12 +55,14 @@ def _now():
 def _full_trail():
     return [
         StoredEvent(
+            aggregate_id="incident-fixture",
             event_type="incident.triaged",
             payload={"raw_message": "Клики не фиксируются", "severity": "high", "topic_tag": "tracking"},
             metadata={},
             created_at=_now(),
         ),
         StoredEvent(
+            aggregate_id="incident-fixture",
             event_type="incident.needs_bug_report",
             payload={
                 "advisory_text": "Нужна эскалация",

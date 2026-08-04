@@ -59,12 +59,17 @@ def _now():
 def _trail_with_bug_report():
     return [
         StoredEvent(
+            aggregate_id="incident-fixture",
             event_type="incident.triaged",
             payload={"raw_message": "msg", "topic_tag": "tracking"},
             metadata={}, created_at=_now(),
         ),
-        StoredEvent(event_type="incident.needs_bug_report", payload={}, metadata={}, created_at=_now()),
         StoredEvent(
+            aggregate_id="incident-fixture",
+            event_type="incident.needs_bug_report", payload={}, metadata={}, created_at=_now(),
+        ),
+        StoredEvent(
+            aggregate_id="incident-fixture",
             event_type="bug_report.created",
             payload={"title": "t", "diagnostic_summary": "s", "actual_behavior": "a"},
             metadata={}, created_at=_now(),

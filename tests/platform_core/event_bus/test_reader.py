@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 
 from etiology.platform_core.event_bus import EventPublisher, EventReader
 
@@ -27,8 +28,10 @@ async def test_read_aggregate_events_returns_events_in_order(tenant_id):
     events = await reader.read_aggregate_events(tenant_id, "incident", aggregate_id)
 
     assert [e.event_type for e in events] == ["incident.triaged", "incident.needs_bug_report"]
+    assert events[0].aggregate_id == aggregate_id
     assert events[0].payload == {"severity": "high"}
     assert events[0].metadata == {"model": "fake"}
+    assert events[1].aggregate_id == aggregate_id
     assert events[1].payload == {"advisory_text": "текст"}
     assert events[1].metadata == {}
 
@@ -37,5 +40,43 @@ async def test_read_aggregate_events_returns_empty_list_for_unknown_aggregate(te
     reader = EventReader()
 
     events = await reader.read_aggregate_events(tenant_id, "incident", str(uuid.uuid4()))
+
+    assert events == []
+
+
+async def test_read_events_by_type_returns_events_across_aggregates(tenant_id):
+    publisher = EventPublisher()
+    reader = EventReader()
+    incident_a = str(uuid.uuid4())
+    incident_b = str(uuid.uuid4())
+
+    await publisher.publish(
+        tenant_id=tenant_id, event_type="incident.triaged", aggregate_type="incident",
+        aggregate_id=incident_a, payload={"topic_tag": "a"},
+    )
+    await publisher.publish(
+        tenant_id=tenant_id, event_type="incident.triaged", aggregate_type="incident",
+        aggregate_id=incident_b, payload={"topic_tag": "b"},
+    )
+
+    events = await reader.read_events_by_type(tenant_id, "incident.triaged")
+
+    found_ids = {e.aggregate_id for e in events}
+    assert incident_a in found_ids
+    assert incident_b in found_ids
+
+
+async def test_read_events_by_type_filters_by_since(tenant_id):
+    publisher = EventPublisher()
+    reader = EventReader()
+    incident_a = str(uuid.uuid4())
+
+    await publisher.publish(
+        tenant_id=tenant_id, event_type="incident.triaged", aggregate_type="incident",
+        aggregate_id=incident_a, payload={"topic_tag": "a"},
+    )
+
+    future = datetime.now(timezone.utc) + timedelta(hours=1)
+    events = await reader.read_events_by_type(tenant_id, "incident.triaged", since=future)
 
     assert events == []
