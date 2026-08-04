@@ -1,3 +1,3 @@
-from .search import KbArticle, search
+from .search import KbArticle, get_by_id, search
 
-__all__ = ["KbArticle", "search"]
+__all__ = ["KbArticle", "get_by_id", "search"]

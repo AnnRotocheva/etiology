@@ -39,3 +39,20 @@ async def search(tenant_id: str, query: str, limit: int = 5) -> list[KbArticle]:
         )
         for row in rows
     ]
+
+
+async def get_by_id(tenant_id: str, article_id: str) -> KbArticle | None:
+    async with tenant_connection(tenant_id) as conn:
+        row = await conn.fetchrow(
+            "SELECT id, kind, title, body, topic_tag FROM knowledge_base_articles WHERE id = $1::uuid",
+            article_id,
+        )
+    if row is None:
+        return None
+    return KbArticle(
+        id=str(row["id"]),
+        kind=row["kind"],
+        title=row["title"],
+        body=row["body"],
+        topic_tag=row["topic_tag"],
+    )
