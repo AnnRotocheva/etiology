@@ -16,9 +16,20 @@ from etiology.platform_core.event_bus import EventPublisher
 TENANT_SLUG = "keitaro-demo"
 
 
+@st.cache_resource
+def _event_loop() -> asyncio.AbstractEventLoop:
+    """Один event loop на весь процесс Streamlit-сервера. etiology.data.db.pool
+    кеширует asyncpg-пул в модульном синглтоне на весь процесс — если каждый
+    run_async создаёт свой loop (как asyncio.run()), пул после первого вызова
+    остаётся привязан к уже закрытому loop'у и падает с InterfaceError на
+    втором обращении. scripts/demo.py этой проблемы не видит: там ровно один
+    asyncio.run() на весь запуск скрипта."""
+    return asyncio.new_event_loop()
+
+
 def run_async(coro: Coroutine) -> Any:
     try:
-        return asyncio.run(coro)
+        return _event_loop().run_until_complete(coro)
     except (ConnectionRefusedError, OSError):
         st.error("Не удалось подключиться к локальной БД. Запустите: `bash scripts/db_start.sh`")
         st.stop()

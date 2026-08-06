@@ -28,7 +28,7 @@ def render() -> None:
         triage_result = run_async(triage(tenant_id, raw_message, gateway=gateway, publisher=publisher))
         st.write(f"severity={triage_result.severity}  topic_tag={triage_result.topic_tag}")
         st.write(f"kb_closable={triage_result.kb_closable}  kb_article_id={triage_result.kb_article_id}")
-        status.update(label="Triage завершён", state="complete")
+        status.update(label="Triage завершён", state="complete", expanded=True)
 
     with st.status("Diagnostic Collector...", expanded=True) as status:
         diag_result = run_async(
@@ -39,7 +39,7 @@ def render() -> None:
             st.write(f"matched_command: {diag_result.matched_command.command}")
         st.write("Текст клиенту:")
         st.info(diag_result.advisory_text)
-        status.update(label="Diagnostic Collector завершён", state="complete")
+        status.update(label="Diagnostic Collector завершён", state="complete", expanded=True)
 
     if diag_result.outcome == "needs_bug_report":
         with st.status("Bug Report Composer...", expanded=True) as status:
@@ -52,7 +52,7 @@ def render() -> None:
             for step in bug_report.steps_to_reproduce:
                 st.write(f"- {step}")
             st.write(f"diagnostic_summary: {bug_report.diagnostic_summary}")
-            status.update(label="Bug Report составлен", state="complete")
+            status.update(label="Bug Report составлен", state="complete", expanded=True)
 
         with st.status("Knowledge Curator...", expanded=True) as status:
             approval_gate = get_approval_gate()
@@ -70,7 +70,7 @@ def render() -> None:
                 st.caption("Черновик ждёт утверждения человеком на странице Approval Gate.")
             else:
                 st.write("Curator решил не предлагать новую статью.")
-            status.update(label="Curator завершён", state="complete")
+            status.update(label="Curator завершён", state="complete", expanded=True)
 
     if csat_score:
         run_async(record_csat(tenant_id, triage_result.incident_id, csat_score, get_publisher(), comment=None))

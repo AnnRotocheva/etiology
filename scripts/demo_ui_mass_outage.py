@@ -29,7 +29,7 @@ def render() -> None:
         for raw_message in MESSAGES:
             result = run_async(triage(tenant_id, raw_message, gateway=gateway, publisher=publisher))
             st.write(f"[{result.incident_id}] severity={result.severity} topic_tag={result.topic_tag}")
-        status.update(label="Triage завершён", state="complete")
+        status.update(label="Triage завершён", state="complete", expanded=True)
 
     with st.status("Incident Coordination Agent...", expanded=True) as status:
         coordination = run_async(
@@ -42,4 +42,4 @@ def render() -> None:
                 st.write(f"Master-инцидент: {group.master_incident_id}")
                 st.write(f"В группе: {group.incident_ids}")
                 st.write(f"Статус: {group.status_summary}")
-        status.update(label="Готово", state="complete")
+        status.update(label="Готово", state="complete", expanded=True)
