@@ -6,4 +6,17 @@ async def test_build_app_registers_all_mcp_tools():
 
     tools = await server.list_tools()
 
-    assert {t.name for t in tools} == {"incident_create", "knowledge_base_search", "analytics_query"}
+    assert {t.name for t in tools} == {
+        "incident_create",
+        "diagnostic_collect",
+        "bug_report_compose",
+        "incident_coordinate",
+        "post_mortem_draft",
+        "kb_curate",
+        "approval_gate_list_pending",
+        "approval_gate_approve",
+        "approval_gate_reject",
+        "knowledge_base_search",
+        "analytics_query",
+        "csat_record",
+    }
