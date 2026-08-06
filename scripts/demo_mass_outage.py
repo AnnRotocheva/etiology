@@ -58,7 +58,12 @@ async def run() -> None:
 
 
 def main() -> None:
-    asyncio.run(run())
+    try:
+        asyncio.run(run())
+    except (ConnectionRefusedError, OSError):
+        raise SystemExit(
+            "Не удалось подключиться к локальной БД. Запустите: bash scripts/db_start.sh"
+        )
 
 
 if __name__ == "__main__":

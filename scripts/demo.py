@@ -108,7 +108,12 @@ def main() -> None:
         )
         sys.exit(1)
     csat_score = int(sys.argv[2]) if len(sys.argv) > 2 else None
-    asyncio.run(run(sys.argv[1], csat_score))
+    try:
+        asyncio.run(run(sys.argv[1], csat_score))
+    except (ConnectionRefusedError, OSError):
+        raise SystemExit(
+            "Не удалось подключиться к локальной БД. Запустите: bash scripts/db_start.sh"
+        )
 
 
 if __name__ == "__main__":

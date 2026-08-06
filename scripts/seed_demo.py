@@ -7,6 +7,7 @@ Collector (docs/architecture.md, v1 vertical slice). Идемпотентно: �
 import asyncio
 import os
 import sys
+from urllib.parse import urlsplit, urlunsplit
 
 import asyncpg
 
@@ -113,12 +114,34 @@ async def seed(database_url: str) -> None:
         await conn.close()
 
 
+def _superuser_url_from_app_url(app_database_url: str) -> str:
+    """Локальный dev-кластер (см. scripts/db_start.sh) использует trust-аутентификацию
+    для 127.0.0.1 — суперпользователю postgres пароль не нужен, только правильный host:port/db."""
+    parts = urlsplit(app_database_url)
+    netloc = f"postgres@{parts.hostname}:{parts.port}"
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+
 def main() -> None:
-    database_url = os.environ.get("SUPERUSER_DATABASE_URL") or os.environ.get("DATABASE_URL")
+    database_url = os.environ.get("SUPERUSER_DATABASE_URL")
     if not database_url:
-        print("SUPERUSER_DATABASE_URL или DATABASE_URL не заданы", file=sys.stderr)
-        sys.exit(1)
-    asyncio.run(seed(database_url))
+        from etiology.config import get_settings
+
+        try:
+            database_url = _superuser_url_from_app_url(get_settings().database_url)
+        except Exception:
+            print(
+                "Не удалось определить БД. Задайте SUPERUSER_DATABASE_URL или проверьте .env "
+                "(DATABASE_URL) и что локальный кластер запущен: bash scripts/db_start.sh",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+    try:
+        asyncio.run(seed(database_url))
+    except (ConnectionRefusedError, OSError):
+        raise SystemExit(
+            "Не удалось подключиться к локальной БД. Запустите: bash scripts/db_start.sh"
+        )
 
 
 if __name__ == "__main__":
