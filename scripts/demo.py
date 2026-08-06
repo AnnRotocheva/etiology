@@ -13,6 +13,7 @@ from etiology.agent.model_gateway import ModelGateway
 from etiology.agent.model_gateway.providers.anthropic_provider import AnthropicProvider
 from etiology.config import get_settings
 from etiology.data.db.pool import get_pool
+from etiology.domain.analytics import csat_summary, record_csat, resolution_rate, top_topics
 from etiology.domain.diagnostics.bug_report_composer import compose
 from etiology.domain.diagnostics.diagnostic_collector import collect
 from etiology.domain.diagnostics.triage import triage
@@ -33,7 +34,7 @@ async def _resolve_tenant_id() -> str:
     return str(tenant_id)
 
 
-async def run(raw_message: str) -> None:
+async def run(raw_message: str, csat_score: int | None) -> None:
     tenant_id = await _resolve_tenant_id()
     settings = get_settings()
     gateway = ModelGateway([AnthropicProvider(api_key=settings.anthropic_api_key)])
@@ -80,12 +81,34 @@ async def run(raw_message: str) -> None:
     for event in events:
         print(f"[{event.created_at:%H:%M:%S}] {event.event_type}")
 
+    if csat_score is not None:
+        print("\n=== CSAT ===")
+        await record_csat(tenant_id, triage_result.incident_id, csat_score, publisher, comment=None)
+        summary = await csat_summary(tenant_id)
+        print(f"Оценка клиента записана: {csat_score}/5")
+        print(f"Сводка по тенанту: count={summary.count}  avg_score={summary.avg_score}")
+
+    print("\n=== Analytics (read-model поверх Event Store) ===")
+    topics = await top_topics(tenant_id)
+    rate = await resolution_rate(tenant_id)
+    print("Топ тем:")
+    for t in topics:
+        print(f"  {t.topic_tag}: {t.count}")
+    print(
+        f"Resolution rate: {rate.resolved_count}/{rate.triaged_count} "
+        f"({rate.rate:.0%}) закрыто по базе знаний без эскалации"
+    )
+
 
 def main() -> None:
     if len(sys.argv) < 2:
-        print('Использование: python scripts/demo.py "текст обращения клиента"', file=sys.stderr)
+        print(
+            'Использование: python scripts/demo.py "текст обращения клиента" [csat_score 1..5]',
+            file=sys.stderr,
+        )
         sys.exit(1)
-    asyncio.run(run(sys.argv[1]))
+    csat_score = int(sys.argv[2]) if len(sys.argv) > 2 else None
+    asyncio.run(run(sys.argv[1], csat_score))
 
 
 if __name__ == "__main__":
