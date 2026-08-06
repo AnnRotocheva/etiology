@@ -16,6 +16,7 @@ async def test_build_app_registers_all_mcp_tools():
         "approval_gate_list_pending",
         "approval_gate_approve",
         "approval_gate_reject",
+        "kb_publish_approved",
         "knowledge_base_search",
         "analytics_query",
         "csat_record",

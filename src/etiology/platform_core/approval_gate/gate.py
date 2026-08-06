@@ -53,6 +53,15 @@ class ApprovalGate:
             )
         return str(row["id"])
 
+    async def get(self, tenant_id: str, approval_id: str) -> ApprovalItem | None:
+        async with tenant_connection(tenant_id) as conn:
+            row = await conn.fetchrow(
+                "SELECT id, object_type, payload, status, created_by, reviewed_by, reviewed_at, created_at "
+                "FROM approval_gate WHERE id = $1::uuid",
+                approval_id,
+            )
+        return _row_to_item(row) if row is not None else None
+
     async def list_pending(self, tenant_id: str, object_type: str | None = None) -> list[ApprovalItem]:
         async with tenant_connection(tenant_id) as conn:
             if object_type is None:

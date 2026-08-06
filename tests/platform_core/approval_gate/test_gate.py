@@ -36,6 +36,27 @@ async def test_approve_removes_item_from_pending(tenant_id):
     assert not any(item.id == approval_id for item in pending)
 
 
+async def test_get_returns_item_regardless_of_status(tenant_id):
+    gate = ApprovalGate()
+    approval_id = await gate.submit(tenant_id, "kb_suggestion", {"title": "t"}, created_by="tester")
+    await gate.approve(tenant_id, approval_id, reviewed_by="reviewer")
+
+    item = await gate.get(tenant_id, approval_id)
+
+    assert item is not None
+    assert item.id == approval_id
+    assert item.status == "approved"
+    assert item.reviewed_by == "reviewer"
+
+
+async def test_get_returns_none_for_unknown_id(tenant_id):
+    gate = ApprovalGate()
+
+    item = await gate.get(tenant_id, "00000000-0000-0000-0000-000000000000")
+
+    assert item is None
+
+
 async def test_reject_removes_item_from_pending(tenant_id):
     gate = ApprovalGate()
     approval_id = await gate.submit(tenant_id, "kb_suggestion", {"title": "t"}, created_by="tester")

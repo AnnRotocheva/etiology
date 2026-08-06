@@ -25,6 +25,7 @@ def build_server(
     coordinate_fn: Callable = coordinate,
     draft_post_mortem_fn: Callable = draft_post_mortem,
     curate_fn: Callable = knowledge_base.curate,
+    publish_approved_fn: Callable = knowledge_base.publish_approved,
     kb_search: Callable = knowledge_base.search,
     top_topics_fn: Callable = top_topics,
     resolution_rate_fn: Callable = resolution_rate,
@@ -195,6 +196,17 @@ def build_server(
     async def approval_gate_reject(tenant_id: str, approval_id: str, reviewed_by: str) -> dict:
         await approval_gate.reject(tenant_id, approval_id, reviewed_by)
         return {"approval_id": approval_id, "status": "rejected"}
+
+    @server.tool(
+        name="kb_publish_approved",
+        description=(
+            "Опубликовать утверждённое человеком предложение Knowledge Curator'а как настоящую "
+            "статью базы знаний. Работает только для approval_id со статусом approved и типом kb_suggestion."
+        ),
+    )
+    async def kb_publish_approved(tenant_id: str, approval_id: str) -> dict:
+        article = await publish_approved_fn(tenant_id, approval_id, approval_gate=approval_gate, publisher=publisher)
+        return {"id": article.id, "title": article.title, "topic_tag": article.topic_tag}
 
     @server.tool(name="knowledge_base_search", description="Поиск по базе знаний тенанта")
     async def knowledge_base_search(tenant_id: str, query: str) -> dict:

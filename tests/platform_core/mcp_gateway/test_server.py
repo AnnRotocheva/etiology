@@ -12,6 +12,7 @@ ALL_TOOL_NAMES = {
     "approval_gate_list_pending",
     "approval_gate_approve",
     "approval_gate_reject",
+    "kb_publish_approved",
     "knowledge_base_search",
     "analytics_query",
     "csat_record",
@@ -27,6 +28,18 @@ class _FakeApprovalGate:
     def __init__(self):
         self.approved = []
         self.rejected = []
+
+    async def get(self, tenant_id, approval_id):
+        return _Result(
+            id=approval_id,
+            object_type="kb_suggestion",
+            payload={"title": "Заголовок", "body": "Тело", "topic_tag": "billing"},
+            status="approved",
+            created_by="knowledge_curator_agent",
+            reviewed_by="ann",
+            reviewed_at=_FakeDatetime(),
+            created_at=_FakeDatetime(),
+        )
 
     async def list_pending(self, tenant_id, object_type=None):
         return [
@@ -127,6 +140,10 @@ async def _fake_record_csat(tenant_id, incident_id, score, publisher, comment=No
     return None
 
 
+async def _fake_publish_approved(tenant_id, approval_id, *, approval_gate, publisher):
+    return _Result(id="article-1", title="Заголовок", topic_tag="billing")
+
+
 def _server(approval_gate=None):
     return build_server(
         gateway=object(),
@@ -138,6 +155,7 @@ def _server(approval_gate=None):
         coordinate_fn=_fake_coordinate,
         draft_post_mortem_fn=_fake_draft_post_mortem,
         curate_fn=_fake_curate,
+        publish_approved_fn=_fake_publish_approved,
         kb_search=_fake_kb_search,
         top_topics_fn=_fake_top_topics,
         resolution_rate_fn=_fake_resolution_rate,
@@ -300,6 +318,14 @@ async def test_approval_gate_reject_wraps_reject():
 
     assert result == {"approval_id": "approval-1", "status": "rejected"}
     assert fake_gate.rejected == [("tenant-1", "approval-1", "ann")]
+
+
+async def test_kb_publish_approved_wraps_publish_approved():
+    server = _server()
+
+    result = await _call(server, "kb_publish_approved", {"tenant_id": "tenant-1", "approval_id": "approval-1"})
+
+    assert result == {"id": "article-1", "title": "Заголовок", "topic_tag": "billing"}
 
 
 async def test_knowledge_base_search_wraps_search():
