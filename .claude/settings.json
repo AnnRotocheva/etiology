@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "Bash(./.venv/Scripts/python.exe -m pytest *)",
       "Bash(./.venv/Scripts/python.exe -m compileall *)",
@@ -12,7 +13,25 @@
       "Bash(\"/c/Program Files/PostgreSQL/17/bin/pg_ctl.exe\" *)",
       "Bash(mkdir -p *)",
       "Bash(cat *)",
+      "Bash(python -m pytest *)",
+      "Bash(python -m compileall *)",
+      "Bash(python -m py_compile *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(tail *)",
+      "Bash(head *)",
+      "Bash(echo *)",
+      "Bash(env)",
+      "Bash(env *)",
+      "Bash(grep *)",
+      "Bash(wc *)",
+      "Bash(pwd)",
+      "Bash(where *)",
+      "Bash(python *)",
+      "Bash(pip *)",
+      "Bash(\"/c/Program Files/PostgreSQL/17/bin/psql.exe\" *)",
       "mcp__ccd_session__mark_chapter"
     ]
-  }
+  },
+  "skipAutoPermissionPrompt": true
 }

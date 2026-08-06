@@ -9,3 +9,4 @@ venv/
 dist/
 build/
 .claude/settings.local.json
+.pgdata_local/
